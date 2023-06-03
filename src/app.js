@@ -1,11 +1,12 @@
-import http from 'http';
+import express from 'express';
 
-const port = process.env.PORT || 3000;
+const app = express();
 
-const server = http.createServer((req, res) => {
-  res.end('Hello world!');
-})
+let trains = [
+  { id: '1', number: '001' },
+  { id: '2', number: '002' },
+];
 
-server.listen(port, () => {
-  console.log(`Server started on port ${port}`)
-})
+app.get('/trains', (req, res) => {
+  res.send(trains);
+});
