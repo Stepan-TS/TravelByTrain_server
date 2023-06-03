@@ -9,7 +9,7 @@ let trains = [
 ];
 
 app.get('/', (req, res) => {
-  res.sendFile(trains);
+  res.sendFile('Trains');
 });
 
 app.listen(PORT, () => {
