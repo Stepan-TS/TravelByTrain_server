@@ -1,23 +1,13 @@
 import express from 'express';
 import cors from 'cors';
+import { trainsRouter } from './routes/trainsRouter.js';
 
 const app = express();
 
 app.use(cors());
+app.use(trainsRouter);
 
 const PORT = process.env.PORT || 5050;
-
-let trains = [
-  { id: '1', number: '001', from: "Lviv", to: "Kyiv" },
-  { id: '2', number: '002', from: "Lutsk", to: "Kyiv" },
-  { id: '3', number: '003', from: "Lviv", to: "Kyiv" },
-  { id: '4', number: '004', from: "Lutsk", to: "Kyiv" },
-  { id: '5', number: '005', from: "Lviv", to: "Kyiv" },
-  { id: '6', number: '006', from: "Radehiv", to: "Kyiv" },
-  { id: '7', number: '007', from: "Lviv", to: "Kyiv" },
-  { id: '8', number: '008', from: "Lviv", to: "Kyiv" },
-  { id: '9', number: '009', from: "Rahiv", to: "Kyiv" },
-]
 
 app.get('/', (req, res) => {
   res.send("This is trains app!");
