@@ -1,8 +1,13 @@
 import express from 'express';
 import cors from 'cors';
+import dotenv from 'dotenv';
+import mysql from 'mysql2';
+
 import { trainsRouter } from './routes/trainsRouter.js';
+import { getAllData } from './models/train.js';
 
 const app = express();
+dotenv.config();
 
 app.use(cors());
 app.use(trainsRouter);
@@ -25,7 +30,19 @@ app.get('/trains', (req, res) => {
   res.send(trains.filter(train => train.from === "Lviv"));
 });
 
+const pool = mysql.createPool({
+  host: process.env.MySql_HOST,
+  user: process.env.MySql_USER,
+  password: process.env.MySql_PASSWORD,
+  database: process.env.MySql_DATABASE,
+});
 
-app.listen(PORT, () => {
-  console.log(`Server started on http://localhost:${PORT}`);
+pool.query(`SELECT * FROM Trains`, (error, results, fields) => {
+  if (error) {
+    console.error('Error executing query:', error);
+    return;
+  }
+
+  // Process the query results
+  console.log('Query results:', results);
 });
