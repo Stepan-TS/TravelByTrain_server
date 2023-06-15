@@ -1,5 +1,6 @@
 import { pool } from '../config/db.js';
 import { cities } from '../config/ua.js';
+import { v4 as uuidv4 } from 'uuid';
 
 const getAllTrains = async (req, res, next) => {
   try {
@@ -36,8 +37,8 @@ const getTrains = async (req, res, next) => {
 
 const createNewTrain = async (req, res, next) => {
     try {
-      let { 
-        id,
+      const id = uuidv4();
+      const { 
         departureCity, 
         arrivalCity, 
         departureDate, 
@@ -46,19 +47,15 @@ const createNewTrain = async (req, res, next) => {
         arrivalTime, 
         trainNumber
     } = req.body;
-      let post = new Train(
-        id,
-        departureCity, 
-        arrivalCity, 
-        departureDate, 
-        arrivalDate, 
-        departureTime, 
-        arrivalTime, 
-        trainNumber
-      );
-  
-      train = await post.save();
-  
+      
+    const query = `INSERT INTO Trains 
+                  (id, departureCity, arrivalCity, departureDate, 
+                  arrivalDate, departureTime, arrivalTime, trainNumber) 
+                  VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+    
+    const values = [id, departureCity, arrivalCity, departureDate, arrivalDate, departureTime, arrivalTime, trainNumber];
+                    
+      await pool.query(query, values);
       res.status(201).json({ message: "Post created" });
     } catch (error) {
       next(error);
@@ -77,7 +74,8 @@ const createNewTrain = async (req, res, next) => {
         res.send("Server is working!");
       }
 
-      res.send(handleFilterQuery(cities, city));
+      const filteredCities = handleFilterQuery(cities, city);
+      res.send(filteredCities);
     } catch (error) {
       next(error);
     }
