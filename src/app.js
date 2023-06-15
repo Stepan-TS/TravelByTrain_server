@@ -1,17 +1,27 @@
-const express = require("express");
-const cors = require("cors");
-const trainsRouter = require('./routes');
-const { getFilterTrains, createTrain } = require("./controllers");
+import express from 'express';
+import moment from 'moment';
+import { router as trainsRouter } from './routes/trains.js';
+import { router as allTrainsRouter } from './routes/allTrains.js';
+import { router as citiesRouter } from './routes/cities.js';
+
+import cors from 'cors';
 
 const app = express();
 app.use(cors());
+app.use(express.json());
 
-app.use(trainsRouter);;
+// Middleware
+app.use(express.json()); // parse json bodies in the request object
 
-const PORT = process.env.PORT || 5050;
+// Redirect requests to endpoint starting with /posts to postRoutes.js
+app.use('/', citiesRouter);
+app.use('/trains', trainsRouter);
+app.use('/allTrains', allTrainsRouter);
 
-app.listen(PORT, () => {
-  console.log(`server running on port ${PORT}`);
-});
+app.get('/', (req, res) => {
+  res.send("server is working!")
+})
 
-module.exports = app;
+// Listen on pc port
+const PORT = process.env.PORT || 8080;
+app.listen(PORT, () => console.log(`Server running on PORT ${PORT}`));

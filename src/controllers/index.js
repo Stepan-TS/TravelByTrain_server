@@ -1,51 +1,86 @@
-const AppError = require("../utils/appError");
-const conn = require("../services/db");
-const { v4: uuidv4 } = require('uuid');
+import { pool } from '../config/db.js';
+import myJson from '../config/ua.json' assert {type: 'json'};
 
-exports.getAllTrains = (req, res, next) => {
-  conn.query("SELECT * FROM Trains", function (err, data, fields) {
-    if (err) return next(new AppError(err))
-    res.status(200).json({
-      status: "success",
-      length: data?.length,
-      data: data,
-    });
-  });
-};
+const getAllTrains = async (req, res, next) => {
+  try {
+    const [rows] = await pool.query("SELECT * FROM Trains");
 
-exports.createTrain = (req, res) => {
-  const values = ['3', 'Lviv', 'Kyiv', '2023-06-15', '2023-06-15', '12:00:00', '22:00:00', '22'];
-
-  const q = "INSERT INTO Trains (id, departureСity, arrivalСity, departureDate, arrivalDate, departureTime, arrivalTime, TrainNumber) VALUES(?)";
-    
-  conn.query(q, [values], (err, data) => {
-    if (err) return res.json(err);
-    return res.json("New Train has been created successfully!");
-  });
-};
-
-exports.getFilterTrains = (req, res, next) => {
-const { arrivalCity } = req.params;
-  if (!arrivalCity) {
-    return next(new AppError("No params found", 404))
+    res.status(200).json({ count: rows.length, trains: rows });
+  } catch (error) {
+    next(error);
   }
-  console.log(arrivalCity);
-  conn.query(
-    `SELECT *
-    FROM Trains
-    WHERE arrivalСity = ?
-    ` [req.params.arrivalСity],
-    function (err, data, fields) {
-      if (err) return next(new AppError(err, 500));
-      res.status(200).json({
-        status: "success",
-        length: data?.length,
-        data: data,
-      });
-    }
-  )
 }
 
-exports.getInfo = (req, res, next) => {
-  res.send("Server!");
+const getTrains = async (req, res, next) => {
+  try {
+    const city1 = req.query.city1;
+    const city2 = req.query.city2;
+    console.log(city1);
+    console.log(city2);
+
+    const queryWeek = `
+      SELECT * 
+      FROM Trains 
+        WHERE 
+          departureCity = "${city1}" AND
+          arrivalCity = "${city2}"
+      `;
+
+    const [rows] = await pool.query(queryWeek);
+
+    res.status(200).json({ count: rows.length, trains: rows });
+  } catch (error) {
+    next(error);
+  }
 };
+
+const createNewTrain = async (req, res, next) => {
+    try {
+      let { 
+        id,
+        departureCity, 
+        arrivalCity, 
+        departureDate, 
+        arrivalDate, 
+        departureTime, 
+        arrivalTime, 
+        trainNumber
+    } = req.body;
+      let post = new Train(
+        id,
+        departureCity, 
+        arrivalCity, 
+        departureDate, 
+        arrivalDate, 
+        departureTime, 
+        arrivalTime, 
+        trainNumber
+      );
+  
+      train = await post.save();
+  
+      res.status(201).json({ message: "Post created" });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  const handleFilterQuery = (cities, city) => {
+    return cities.filter(c => c.city.toLocaleLowerCase().includes(city.toLocaleLowerCase()))
+  }
+
+  const getCities = async (req, res, next) => {
+    try {
+      const city = req.query.city;
+
+      if (!city) {
+        res.send("Server is working!");
+      }
+
+      res.send(handleFilterQuery(myJson, city));
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  export default { getTrains, createNewTrain, getCities, getAllTrains }
