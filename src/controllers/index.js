@@ -1,5 +1,5 @@
 import { pool } from '../config/db.js';
-import myJson from '../config/ua.json' assert {type: 'json'};
+import { cities } from '../config/ua.js';
 
 const getAllTrains = async (req, res, next) => {
   try {
@@ -77,7 +77,7 @@ const createNewTrain = async (req, res, next) => {
         res.send("Server is working!");
       }
 
-      res.send(handleFilterQuery(myJson, city));
+      res.send(handleFilterQuery(cities, city));
     } catch (error) {
       next(error);
     }
