@@ -1,6 +1,7 @@
 import { pool } from '../config/db.js';
 import { cities } from '../config/ua.js';
 import { v4 as uuidv4 } from 'uuid';
+import moment from 'moment';
 
 const getAllTrains = async (req, res, next) => {
   try {
@@ -12,19 +13,31 @@ const getAllTrains = async (req, res, next) => {
   }
 }
 
+const today = new Date().toISOString().slice(0, 10);
+const nextWeek = new Date();
+nextWeek.setDate(nextWeek.getDate() + 7);
+const endOfWeek = nextWeek.toISOString().slice(0, 10);
+const currentTime = new Date().toLocaleTimeString('en-US', { hour12: false });
+
 const getTrains = async (req, res, next) => {
   try {
     const city1 = req.query.city1;
     const city2 = req.query.city2;
-    console.log(city1);
-    console.log(city2);
 
     const queryWeek = `
       SELECT * 
       FROM Trains 
-        WHERE 
-          departureCity = "${city1}" AND
-          arrivalCity = "${city2}"
+        WHERE departureCity = "${city1}"
+        AND arrivalCity = "${city2}"
+        AND (
+          departureDate > "${today}"
+          OR (
+            departureDate = "${today}"
+            AND departureTime > "${currentTime}"
+          )
+        )
+        AND departureDate <= "${endOfWeek}"
+      ORDER BY departureDate ASC;
       `;
 
     const [rows] = await pool.query(queryWeek);
